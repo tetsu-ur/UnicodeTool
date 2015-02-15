@@ -8,42 +8,42 @@ import java.util.Properties;
 
 import org.eclipse.swt.graphics.Point;
 
-public class MainFormSettings {
+public class UnicodeFormSettings {
 
 	/**
 	 * コンストラクタ
 	 */
-	public MainFormSettings() {
+	public UnicodeFormSettings() {
 		this.load();
 	}
-	
-	private Point mainFormLocation;
-	
+
+	private Point unicodeFormLocation;
+
 	/**
-	 * @return the mainFormLocation
+	 * @return the unicodeFormLocation
 	 */
-	public Point getMainFormLocation() {
-		return mainFormLocation;
+	public Point getUnicodeFormLocation() {
+		return unicodeFormLocation;
 	}
 
 	/**
-	 * @param mainFormLocation the mainFormLocation to set
+	 * @param unicodeFormLocation the unicodeFormLocation to set
 	 */
-	public void setMainFormLocation(Point mainFormLocation) {
-		this.mainFormLocation = mainFormLocation;
+	public void setUnicodeFormLocation(Point unicodeFormLocation) {
+		this.unicodeFormLocation = unicodeFormLocation;
 	}
-	
+
 	/**
 	 * オブジェクトの値をプロパティファイルに保存
 	 */
 	public void save() {
 		try {
 			Properties prop = new Properties();
-			
-			prop.setProperty("MainFormLocation", 
-					String.valueOf(this.getMainFormLocation().x) + ", " +
-					String.valueOf(this.getMainFormLocation().y));
-			
+
+			prop.setProperty("UnicodeFormLocation",
+					String.valueOf(this.getUnicodeFormLocation().x) + ", " +
+					String.valueOf(this.getUnicodeFormLocation().y));
+
 			prop.store(new FileOutputStream("applicationSetting.properties"), null);
 
 		} catch (FileNotFoundException e) {
@@ -52,16 +52,16 @@ public class MainFormSettings {
 			e.printStackTrace();
 		}
 	}
-	
+
 	public void load() {
-		
+
 		try {
 			Properties prop = new Properties();
 			prop.load(new FileInputStream("applicationSetting.properties"));
-			
-			String string = prop.getProperty("MainFormLocation", "0,0");
-            this.setMainFormLocation(cnvPointFromString(string));
-			
+
+			String string = prop.getProperty("UnicodeFormLocation", "0,0");
+            this.setUnicodeFormLocation(cnvPointFromString(string));
+
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		} catch (IOException e) {
@@ -71,7 +71,7 @@ public class MainFormSettings {
 
 	/**
 	 * 「x, y」形式の文字列を Point オブジェクトに変換
-	 * 
+	 *
 	 * @param coordinate
 	 * @return
 	 */
