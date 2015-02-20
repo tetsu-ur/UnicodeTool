@@ -279,4 +279,251 @@ public class UnicodeUtil {
 	    }
 	    return result;
 	}
+
+	// Charactor.isBmpCodePoint
+	// IVS サロゲートペアか
+	// サロゲートペア文字か
+
+
+	public static List<UnicodeInfo> createUnicodeList(String str) {
+
+		List<UnicodeInfo> unicodeList = new ArrayList<>();
+		char[] charArray = str.toCharArray();
+
+		boolean isDelimit = true;
+		UnicodeUtil util = new UnicodeUtil();
+		UnicodeInfo info = null;
+
+		for (int i=0; i <= charArray.length - 1 ; i++) {
+			if (isDelimit) {
+				if (info != null) {
+					setLiteral(info);
+					unicodeList.add(info);
+				}
+                info =  util.new UnicodeInfo();
+                isDelimit = false;
+
+			}
+
+			char currentChar = charArray[i];
+
+			// BMPコード単体文字の場合
+			if (Character.isBmpCodePoint(currentChar) && !Character.isSurrogate(currentChar)) {
+				info.setBmpChar(currentChar);
+
+				if (i == charArray.length - 1) {
+					isDelimit = true;
+					continue;
+				}
+
+				// 次の char が IVS 以外の上位サロゲートまたサロゲート以外のBMPなら区切る
+                char nextChar = charArray[i+1];
+				if ((!IVSUtil.isVariationSelector(nextChar) && Character.isHighSurrogate(nextChar)) ||
+						Character.isBmpCodePoint(nextChar) &&  !Character.isSurrogate(nextChar)) {
+                    isDelimit = true;
+				}
+
+				continue;
+			}
+
+			// 上位サロゲート(Variation Selector の上位サロゲートを除く)
+			if (!IVSUtil.isVariationSelector(currentChar) &&
+					Character.isHighSurrogate(currentChar) &&
+					info.getHighSurrogateChar() == 0) {
+
+				info.setHighSurrogateChar(currentChar);
+				continue;
+			}
+
+			// 下位サロゲート(Variation Selector の下位サロゲートを除く)
+			if (!IVSUtil.isVariationSelector(currentChar) &&
+					Character.isLowSurrogate(currentChar) &&
+					info.getHighSurrogateChar() != 0  &&
+					info.getLowSurrogateChar() == 0) {
+
+				info.setLowSurrogateChar(currentChar);
+
+				if (i + 1 < charArray.length && !IVSUtil.isVariationSelector(charArray[i+1])) {
+					isDelimit = true;
+				}
+
+				continue;
+			}
+
+			// Variation Selector の上位サロゲート
+			if (IVSUtil.isVariationSelector(currentChar) &&
+					Character.isHighSurrogate(currentChar) &&
+					info.getIvsHighSurrogateChar() == 0) {
+
+				info.setIvsHighSurrogateChar(currentChar);
+				continue;
+			}
+
+			// Variation Selector の下位サロゲート
+			if (IVSUtil.isVariationSelector(currentChar) &&
+					Character.isLowSurrogate(currentChar) &&
+					info.getIvsHighSurrogateChar() != 0) {
+
+				info.setIvsLowSurrogateChar(currentChar);
+				isDelimit = true;
+				continue;
+			}
+		}
+
+
+        if (info != null) {
+            setLiteral(info);
+            unicodeList.add(info);
+        }
+
+		return unicodeList;
+	}
+
+	public static String getSurrogatePairString(List<UnicodeInfo> unicodeInfos) {
+
+		StringBuilder sb = new StringBuilder();
+		for (UnicodeInfo info : unicodeInfos) {
+			if (info.getHighSurrogateChar() != 0) {
+				sb.append(info.getLiteral());
+			}
+		}
+		return sb.toString();
+	}
+
+	public static String getIVString(List<UnicodeInfo> unicodeInfos) {
+
+		StringBuilder sb = new StringBuilder();
+		for (UnicodeInfo info: unicodeInfos) {
+			if (info.getIvsHighSurrogateChar() != 0) {
+				sb.append(info.getLiteral());
+			}
+		}
+		return sb.toString();
+	}
+
+	public static int countMongolianIVS(List<UnicodeInfo> unicodeInfos) {
+
+		int count = 0;
+		for (UnicodeInfo info: unicodeInfos) {
+			if (IVSUtil.checkMongolianFreeVariationSelector(info.getIvsHighSurrogateChar())) {
+				count++;
+			}
+		}
+		return count;
+	}
+
+	public static int countJapaneseIVS(List<UnicodeInfo> unicodeInfos) {
+
+		int count = 0;
+		for (UnicodeInfo info: unicodeInfos) {
+			if (IVSUtil.checkVariationSelectorSupplement(info.getIvsHighSurrogateChar())) {
+				count++;
+			}
+		}
+		return count;
+	}
+
+	public static int countOtherIVS(List<UnicodeInfo> unicodeInfos) {
+
+		int count = 0;
+		for (UnicodeInfo info: unicodeInfos) {
+			if (IVSUtil.checkVariationSelector(info.getIvsHighSurrogateChar())) {
+				count++;
+			}
+		}
+		return count;
+	}
+
+	private static void setLiteral(UnicodeInfo info) {
+		char[] chars = new char[info.getCharCount()];
+		int idx = 0;
+
+		if (info.getBmpChar() != 0) {
+			chars[idx++] = info.getBmpChar();
+		}
+
+		if (info.getHighSurrogateChar() != 0) {
+			chars[idx++] = info.getHighSurrogateChar();
+		}
+
+		if (info.getLowSurrogateChar() != 0) {
+			chars[idx++] = info.getLowSurrogateChar();
+		}
+
+		if (info.getIvsHighSurrogateChar() != 0) {
+			chars[idx++] = info.getIvsHighSurrogateChar();
+		}
+
+		if (info.getIvsHighSurrogateChar() != 0) {
+			chars[idx++] = info.getIvsLowSurrogateChar();
+		}
+
+		info.setLiteral(new String(chars));
+	}
+
+	/**
+	 * Unicode の表示上の１文字の情報
+	 * @author Tetsuya
+	 *
+	 */
+	public class UnicodeInfo {
+
+		private char bmpChar;
+		private char highSurrogateChar;
+		private char lowSurrogateChar;
+		private char ivsHighSurrogateChar;
+		private char ivsLowSurrogateChar;
+		private int charCount;
+		private String literal;
+
+		public char getBmpChar() {
+			return bmpChar;
+		}
+		public void setBmpChar(char bmpChar) {
+			this.bmpChar = bmpChar;
+			this.incrementCharCount();
+		}
+		public char getHighSurrogateChar() {
+			return highSurrogateChar;
+		}
+		public void setHighSurrogateChar(char highSurrogateChar) {
+			this.highSurrogateChar = highSurrogateChar;
+			this.incrementCharCount();
+		}
+		public char getLowSurrogateChar() {
+			return lowSurrogateChar;
+		}
+		public void setLowSurrogateChar(char lowSurrogateChar) {
+			this.lowSurrogateChar = lowSurrogateChar;
+			this.incrementCharCount();
+		}
+		public char getIvsHighSurrogateChar() {
+			return ivsHighSurrogateChar;
+		}
+		public void setIvsHighSurrogateChar(char ivsHighSurrogateChar) {
+			this.ivsHighSurrogateChar = ivsHighSurrogateChar;
+			this.incrementCharCount();
+		}
+		public char getIvsLowSurrogateChar() {
+			return ivsLowSurrogateChar;
+		}
+		public void setIvsLowSurrogateChar(char ivsLowSurrogateChar) {
+			this.ivsLowSurrogateChar = ivsLowSurrogateChar;
+			this.incrementCharCount();
+		}
+		public int getCharCount() {
+			return charCount;
+		}
+		public void incrementCharCount() {
+			this.charCount += 1;
+		}
+		public String getLiteral() {
+			return literal;
+		}
+		public void setLiteral(String literal) {
+			this.literal = literal;
+		}
+
+	}
+
 }

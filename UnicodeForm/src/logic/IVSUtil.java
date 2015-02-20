@@ -62,7 +62,7 @@ public class IVSUtil {
      * @return 文字がセレクタ文字列の場合は true。それ以外の場合は false。
      */
     @SuppressWarnings("unused")
-	private static boolean checkVariationSelectorSupplement(char c)
+	public static boolean checkVariationSelectorSupplement(char c)
     {
         if (c == VariationSelectorSupplementHi
             || (VariationSelectorSupplementLoStart <= c && c <= VariationSelectorSupplementLoEnd))
@@ -78,7 +78,7 @@ public class IVSUtil {
      * @return 文字がセレクタ文字列の場合は true。それ以外の場合は false。
      */
     @SuppressWarnings("unused")
-	private static boolean checkVariationSelector(char c)
+	public static boolean checkVariationSelector(char c)
     {
         if (VariationSelectorStart <= c && c <= VariationSelectorEnd)
         {
@@ -93,7 +93,7 @@ public class IVSUtil {
      * @return 文字がセレクタ文字列の場合は true。それ以外の場合は false。
      */
     @SuppressWarnings("unused")
-	private static boolean checkMongolianFreeVariationSelector(char c)
+	public static boolean checkMongolianFreeVariationSelector(char c)
     {
         if (MongolianFreeVariationSelectorStart <= c && c <= MongolianFreeVariationSelectorEnd)
         {

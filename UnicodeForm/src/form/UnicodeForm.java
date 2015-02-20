@@ -1,6 +1,7 @@
 package form;
 
 import java.io.UnsupportedEncodingException;
+import java.util.List;
 
 import logic.UnicodeUtil;
 
@@ -26,6 +27,9 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.wb.swt.SWTResourceManager;
+
+import form.UnicodeFormHandler.ModifyText_textInUnicode;
+import form.UnicodeFormHandler.Selected_rdUTFEncode;
 
 public class UnicodeForm {
 	private DataBindingContext m_bindingContext;
@@ -58,6 +62,18 @@ public class UnicodeForm {
 	private Button rdUTF32;
 
 	private UnicodeFormHandler handler = new UnicodeFormHandler(this);
+	private Text textOutStrLength;
+	private Label lblStringcodepointcount;
+	private Text textOutCodepointCount;
+	private Label lblIvsCount;
+	private Text textOutIVSCount;
+	private Text textOutMongolianIVSCount;
+	private Text textOutJapaneseIVSCount;
+	private Label label_9;
+	private Text textOutSurrogatePairStrings;
+	private Text textOutOtherIVSCount;
+	private Label lblIvs;
+	private Text textOutIVSStrings;
 
 	/**
 	 * Launch the application.
@@ -102,17 +118,17 @@ public class UnicodeForm {
 				settings.save();
 			}
 		});
-		shlUnicode.setSize(646, 478);
+		shlUnicode.setSize(725, 586);
 		shlUnicode.setText("Unicodeツール");
 		shlUnicode.setLayout(new FormLayout());
 
 		Group grpStrToUnicode = new Group(shlUnicode, SWT.NONE);
 		grpStrToUnicode.setLayout(new FormLayout());
 		FormData fd_grpStrToUnicode = new FormData();
+		fd_grpStrToUnicode.height = 250;
+		fd_grpStrToUnicode.top = new FormAttachment(0, 10);
 		fd_grpStrToUnicode.left = new FormAttachment(0, 10);
 		fd_grpStrToUnicode.right = new FormAttachment(100, -10);
-		fd_grpStrToUnicode.bottom = new FormAttachment(0, 161);
-		fd_grpStrToUnicode.top = new FormAttachment(0, 10);
 		grpStrToUnicode.setLayoutData(fd_grpStrToUnicode);
 		grpStrToUnicode.setText("文字→Unicode");
 
@@ -121,12 +137,19 @@ public class UnicodeForm {
 		textInStr.addModifyListener(new ModifyListener() {
 			public void modifyText(ModifyEvent e) {
 				try {
-					textOutUTF8.setText(
-							UnicodeUtil.decodeUTF8(textInStr.getText()));
-					textOutUTF16.setText(
-							UnicodeUtil.decodeUTF16(textInStr.getText()));
-					textOutUTF32.setText(
-							UnicodeUtil.decodeUTF32(textInStr.getText()));
+					String inStr = textInStr.getText();
+					textOutUTF8.setText(UnicodeUtil.decodeUTF8(inStr));
+					textOutUTF16.setText(UnicodeUtil.decodeUTF16(inStr));
+					textOutUTF32.setText(UnicodeUtil.decodeUTF32(inStr));
+					textOutStrLength.setText(String.valueOf(inStr.length()));
+					textOutCodepointCount.setText(String.valueOf(inStr.codePointCount(0, inStr.length())));
+					List<UnicodeUtil.UnicodeInfo> infos = UnicodeUtil.createUnicodeList(inStr);
+					textOutIVSCount.setText(String.valueOf(infos.size()));
+					textOutSurrogatePairStrings.setText(UnicodeUtil.getSurrogatePairString(infos));
+					textOutIVSStrings.setText(UnicodeUtil.getIVString(infos));
+					textOutMongolianIVSCount.setText(String.valueOf(UnicodeUtil.countMongolianIVS(infos)));
+					textOutJapaneseIVSCount.setText(String.valueOf(UnicodeUtil.countJapaneseIVS(infos)));
+					textOutOtherIVSCount.setText(String.valueOf(UnicodeUtil.countOtherIVS(infos)));
 				} catch (UnsupportedEncodingException ex) {
 					ex.printStackTrace();
 				}
@@ -142,6 +165,7 @@ public class UnicodeForm {
 		FormData fd_grpUnicodeToStr = new FormData();
 		fd_grpUnicodeToStr.top = new FormAttachment(grpStrToUnicode, 6);
 		fd_grpUnicodeToStr.left = new FormAttachment(grpStrToUnicode, 0, SWT.LEFT);
+		fd_grpUnicodeToStr.right = new FormAttachment(100, -10);
 		fd_grpUnicodeToStr.height = 100;
 
 		textOutUTF8 = new Text(grpStrToUnicode, SWT.BORDER);
@@ -191,8 +215,129 @@ public class UnicodeForm {
 		fd_lblUtf_1.left = new FormAttachment(0, 14);
 		lblUtf_1.setLayoutData(fd_lblUtf_1);
 		lblUtf_1.setText("UTF-32");
+
+		Label lblStringlength = new Label(grpStrToUnicode, SWT.NONE);
+		FormData fd_lblStringlength = new FormData();
+		fd_lblStringlength.top = new FormAttachment(lblUtf_1, 12);
+		fd_lblStringlength.left = new FormAttachment(0, 10);
+		lblStringlength.setLayoutData(fd_lblStringlength);
+		lblStringlength.setText("String.length");
+
+		textOutStrLength = new Text(grpStrToUnicode, SWT.BORDER | SWT.RIGHT);
+		textOutStrLength.setBackground(SWTResourceManager.getColor(SWT.COLOR_WIDGET_BACKGROUND));
+		FormData fd_textOutStrLength = new FormData();
+		fd_textOutStrLength.left = new FormAttachment(textOutUTF8, 0, SWT.LEFT);
+		fd_textOutStrLength.right = new FormAttachment(textOutUTF8, 36);
+		fd_textOutStrLength.top = new FormAttachment(textOutUTF32, 6);
+		textOutStrLength.setLayoutData(fd_textOutStrLength);
+
+		lblStringcodepointcount = new Label(grpStrToUnicode, SWT.NONE);
+		lblStringcodepointcount.setText("String.codePointCount");
+		FormData fd_lblStringcodepointcount = new FormData();
+		fd_lblStringcodepointcount.left = new FormAttachment(textOutStrLength, 29);
+		fd_lblStringcodepointcount.top = new FormAttachment(lblStringlength, 0, SWT.TOP);
+		lblStringcodepointcount.setLayoutData(fd_lblStringcodepointcount);
+
+		textOutCodepointCount = new Text(grpStrToUnicode, SWT.BORDER | SWT.RIGHT);
+		textOutCodepointCount.setBackground(SWTResourceManager.getColor(SWT.COLOR_WIDGET_BACKGROUND));
+		FormData fd_textOutCodepointCount = new FormData();
+		fd_textOutCodepointCount.left = new FormAttachment(lblStringcodepointcount, 35);
+		fd_textOutCodepointCount.width = 28;
+		fd_textOutCodepointCount.top = new FormAttachment(textOutUTF32, 6);
+		textOutCodepointCount.setLayoutData(fd_textOutCodepointCount);
+
+		lblIvsCount = new Label(grpStrToUnicode, SWT.NONE);
+		lblIvsCount.setText("IVS Count");
+		FormData fd_lblIvsCount = new FormData();
+		fd_lblIvsCount.top = new FormAttachment(lblStringlength, 0, SWT.TOP);
+		fd_lblIvsCount.left = new FormAttachment(textOutCodepointCount, 45);
+		lblIvsCount.setLayoutData(fd_lblIvsCount);
+
+		textOutIVSCount = new Text(grpStrToUnicode, SWT.BORDER | SWT.RIGHT);
+		textOutIVSCount.setBackground(SWTResourceManager.getColor(SWT.COLOR_WIDGET_BACKGROUND));
+		FormData fd_textOutIVSCount = new FormData();
+		fd_textOutIVSCount.width = 28;
+		fd_textOutIVSCount.top = new FormAttachment(textOutUTF32, 6);
+		fd_textOutIVSCount.left = new FormAttachment(lblIvsCount, 30);
+		textOutIVSCount.setLayoutData(fd_textOutIVSCount);
+
+		Label lblNewLabel = new Label(grpStrToUnicode, SWT.NONE);
+		FormData fd_lblNewLabel = new FormData();
+		lblNewLabel.setLayoutData(fd_lblNewLabel);
+		lblNewLabel.setText("日本漢字用選択子");
+
+		Label label_7 = new Label(grpStrToUnicode, SWT.NONE);
+		fd_lblNewLabel.top = new FormAttachment(label_7, 0, SWT.TOP);
+		label_7.setText("モンゴル自由字形選択子");
+		FormData fd_label_7 = new FormData();
+		fd_label_7.top = new FormAttachment(textOutStrLength, 9);
+		fd_label_7.left = new FormAttachment(0, 10);
+		label_7.setLayoutData(fd_label_7);
+
+		Label label_8 = new Label(grpStrToUnicode, SWT.NONE);
+		label_8.setText("その他選択子");
+		FormData fd_label_8 = new FormData();
+		fd_label_8.top = new FormAttachment(lblNewLabel, 0, SWT.TOP);
+		label_8.setLayoutData(fd_label_8);
+
+		textOutMongolianIVSCount = new Text(grpStrToUnicode, SWT.BORDER | SWT.RIGHT);
+		fd_lblNewLabel.left = new FormAttachment(textOutMongolianIVSCount, 44);
+		textOutMongolianIVSCount.setBackground(SWTResourceManager.getColor(SWT.COLOR_WIDGET_BACKGROUND));
+		FormData fd_textOutMongolianIVSCount = new FormData();
+		fd_textOutMongolianIVSCount.right = new FormAttachment(label_7, 66, SWT.RIGHT);
+		fd_textOutMongolianIVSCount.top = new FormAttachment(lblStringcodepointcount, 6);
+		fd_textOutMongolianIVSCount.left = new FormAttachment(label_7, 38);
+		textOutMongolianIVSCount.setLayoutData(fd_textOutMongolianIVSCount);
+
+		textOutJapaneseIVSCount = new Text(grpStrToUnicode, SWT.BORDER | SWT.RIGHT);
+		fd_label_8.left = new FormAttachment(textOutJapaneseIVSCount, 41);
+		textOutJapaneseIVSCount.setBackground(SWTResourceManager.getColor(SWT.COLOR_WIDGET_BACKGROUND));
+		FormData fd_textOutJapaneseIVSCount = new FormData();
+		fd_textOutJapaneseIVSCount.right = new FormAttachment(lblNewLabel, 67, SWT.RIGHT);
+		fd_textOutJapaneseIVSCount.top = new FormAttachment(textOutCodepointCount, 6);
+		fd_textOutJapaneseIVSCount.left = new FormAttachment(lblNewLabel, 39);
+		textOutJapaneseIVSCount.setLayoutData(fd_textOutJapaneseIVSCount);
+
+		label_9 = new Label(grpStrToUnicode, SWT.NONE);
+		label_9.setText("サロゲートペア文字列");
+		FormData fd_label_9 = new FormData();
+		fd_label_9.top = new FormAttachment(label_7, 12);
+		fd_label_9.left = new FormAttachment(0, 10);
+		label_9.setLayoutData(fd_label_9);
+
+		textOutSurrogatePairStrings = new Text(grpStrToUnicode, SWT.BORDER);
+		textOutSurrogatePairStrings.setEditable(false);
+		textOutSurrogatePairStrings.setBackground(SWTResourceManager.getColor(SWT.COLOR_WIDGET_BACKGROUND));
+		FormData fd_textOutSurrogatePairStrings = new FormData();
+		fd_textOutSurrogatePairStrings.right = new FormAttachment(textInStr, 0, SWT.RIGHT);
+		fd_textOutSurrogatePairStrings.top = new FormAttachment(label_9, -3, SWT.TOP);
+		fd_textOutSurrogatePairStrings.left = new FormAttachment(label_9, 14);
+		textOutSurrogatePairStrings.setLayoutData(fd_textOutSurrogatePairStrings);
+
+		textOutOtherIVSCount = new Text(grpStrToUnicode, SWT.BORDER | SWT.RIGHT);
+		textOutOtherIVSCount.setBackground(SWTResourceManager.getColor(SWT.COLOR_WIDGET_BACKGROUND));
+		FormData fd_textOutOtherIVSCount = new FormData();
+		fd_textOutOtherIVSCount.left = new FormAttachment(textOutIVSCount, 30, SWT.LEFT);
+		fd_textOutOtherIVSCount.top = new FormAttachment(lblNewLabel, -3, SWT.TOP);
+		fd_textOutOtherIVSCount.width = 28;
+		textOutOtherIVSCount.setLayoutData(fd_textOutOtherIVSCount);
+
+		lblIvs = new Label(grpStrToUnicode, SWT.NONE);
+		lblIvs.setText("IVS文字列");
+		FormData fd_lblIvs = new FormData();
+		fd_lblIvs.top = new FormAttachment(label_9, 13);
+		fd_lblIvs.left = new FormAttachment(textInStr, 0, SWT.LEFT);
+		lblIvs.setLayoutData(fd_lblIvs);
+
+		textOutIVSStrings = new Text(grpStrToUnicode, SWT.BORDER);
+		textOutIVSStrings.setEditable(false);
+		textOutIVSStrings.setBackground(SWTResourceManager.getColor(SWT.COLOR_WIDGET_BACKGROUND));
+		FormData fd_textOutIVSStrings = new FormData();
+		fd_textOutIVSStrings.top = new FormAttachment(textOutSurrogatePairStrings, 6);
+		fd_textOutIVSStrings.right = new FormAttachment(textInStr, 0, SWT.RIGHT);
+		fd_textOutIVSStrings.left = new FormAttachment(textOutSurrogatePairStrings, 0, SWT.LEFT);
+		textOutIVSStrings.setLayoutData(fd_textOutIVSStrings);
 		grpUnicodeToStr.setLayout(new FormLayout());
-		fd_grpUnicodeToStr.right = new FormAttachment(100, -10);
 		grpUnicodeToStr.setLayoutData(fd_grpUnicodeToStr);
 		grpUnicodeToStr.setText("Unicode→文字");
 
@@ -200,6 +345,7 @@ public class UnicodeForm {
 		FormData fd_grpCodepointToSurrrogatePair = new FormData();
 		fd_grpCodepointToSurrrogatePair.top = new FormAttachment(grpUnicodeToStr, 6);
 		fd_grpCodepointToSurrrogatePair.right = new FormAttachment(grpStrToUnicode, 0, SWT.RIGHT);
+		fd_grpCodepointToSurrrogatePair.left = new FormAttachment(0, 10);
 
 		rdUTF8 = new Button(grpUnicodeToStr, SWT.RADIO);
 		rdUTF8.addSelectionListener(handler.new Selected_rdUTFEncode());
@@ -250,16 +396,15 @@ public class UnicodeForm {
 		textOutStr.setLayoutData(fd_textOutStr);
 		grpUnicodeToStr.setTabList(new Control[]{textInUnicode, rdUTF8, rdUTF16, rdUTF32, textOutStr});
 		fd_grpCodepointToSurrrogatePair.height = 40;
-		fd_grpCodepointToSurrrogatePair.left = new FormAttachment(0, 10);
 		grpCodepointToSurrrogatePair.setLayoutData(fd_grpCodepointToSurrrogatePair);
 		grpCodepointToSurrrogatePair.setText("Unicodeコードポイント→サロゲートペア");
 
 		Group grpSurrogatePairToCodepoint = new Group(shlUnicode, SWT.NONE);
 		FormData fd_grpSurrogatePairToCodepoint = new FormData();
+		fd_grpSurrogatePairToCodepoint.bottom = new FormAttachment(grpCodepointToSurrrogatePair, 67, SWT.BOTTOM);
 		fd_grpSurrogatePairToCodepoint.top = new FormAttachment(grpCodepointToSurrrogatePair, 6);
-		fd_grpSurrogatePairToCodepoint.right = new FormAttachment(grpStrToUnicode, 0, SWT.RIGHT);
-		fd_grpSurrogatePairToCodepoint.bottom = new FormAttachment(100, -10);
-		fd_grpSurrogatePairToCodepoint.left = new FormAttachment(0, 10);
+		fd_grpSurrogatePairToCodepoint.left = new FormAttachment(grpStrToUnicode, 0, SWT.LEFT);
+		fd_grpSurrogatePairToCodepoint.right = new FormAttachment(100, -10);
 
 		textInCodepoint = new Text(grpCodepointToSurrrogatePair, SWT.BORDER);
 		textInCodepoint.addModifyListener(new ModifyListener() {
@@ -270,91 +415,73 @@ public class UnicodeForm {
 				textOutLowSurrogate.setText(surrogatePair[1]);
 			}
 		});
-		textInCodepoint.setBounds(102, 25, 72, 24);
+		textInCodepoint.setBounds(110, 25, 72, 24);
 
 		Label label = new Label(grpCodepointToSurrrogatePair, SWT.NONE);
-		label.setBounds(206, 28, 84, 18);
+		label.setBounds(210, 28, 84, 18);
 		label.setText("上位サロゲート");
 
 		Label label_1 = new Label(grpCodepointToSurrrogatePair, SWT.NONE);
 		label_1.setText("下位サロゲート");
-		label_1.setBounds(396, 28, 84, 18);
+		label_1.setBounds(410, 28, 84, 18);
 
 		textOutHighSurrogate = new Text(grpCodepointToSurrrogatePair, SWT.BORDER);
 		textOutHighSurrogate.setEditable(false);
 		textOutHighSurrogate.setBackground(SWTResourceManager.getColor(SWT.COLOR_WIDGET_BACKGROUND));
 		textOutHighSurrogate.setForeground(SWTResourceManager.getColor(0, 0, 0));
-		textOutHighSurrogate.setBounds(296, 25, 72, 24);
+		textOutHighSurrogate.setBounds(310, 25, 60, 24);
 
 		textOutLowSurrogate = new Text(grpCodepointToSurrrogatePair, SWT.BORDER);
 		textOutLowSurrogate.setEditable(false);
 		textOutLowSurrogate.setBackground(SWTResourceManager.getColor(SWT.COLOR_WIDGET_BACKGROUND));
 		textOutLowSurrogate.setForeground(SWTResourceManager.getColor(0, 0, 0));
-		textOutLowSurrogate.setBounds(486, 25, 72, 24);
+		textOutLowSurrogate.setBounds(510, 25, 60, 24);
 
 		label_6 = new Label(grpCodepointToSurrrogatePair, SWT.NONE);
 		label_6.setText("コードポイント");
 		label_6.setBounds(10, 28, 84, 18);
-		grpSurrogatePairToCodepoint.setLayout(new FormLayout());
+		grpSurrogatePairToCodepoint.setLayout(null);
 		grpSurrogatePairToCodepoint.setLayoutData(fd_grpSurrogatePairToCodepoint);
 		grpSurrogatePairToCodepoint.setText("サロゲートペア→Unicodeコードポイント");
 
 		label_3 = new Label(grpSurrogatePairToCodepoint, SWT.NONE);
-		FormData fd_label_3 = new FormData();
-		fd_label_3.left = new FormAttachment(0, 10);
-		label_3.setLayoutData(fd_label_3);
+		label_3.setBounds(10, 28, 84, 18);
 		label_3.setText("上位サロゲート");
 
 		textInHighSurrogate = new Text(grpSurrogatePairToCodepoint, SWT.BORDER);
+		textInHighSurrogate.setBounds(120, 25, 60, 24);
 		textInHighSurrogate.addModifyListener(new ModifyListener() {
 			public void modifyText(ModifyEvent e) {
 				textOutCodepoint.setText(UnicodeUtil.convSurrogatePair2Codepoint(
 						textInHighSurrogate.getText(), textInLowSurrogate.getText()));
 			}
 		});
-		FormData fd_textInHighSurrogate = new FormData();
-		fd_textInHighSurrogate.top = new FormAttachment(label_3, -3, SWT.TOP);
-		fd_textInHighSurrogate.left = new FormAttachment(label_3, 6);
-		textInHighSurrogate.setLayoutData(fd_textInHighSurrogate);
 		textInHighSurrogate.setForeground(SWTResourceManager.getColor(0, 0, 0));
 		textInHighSurrogate.setBackground(SWTResourceManager.getColor(255, 255, 255));
 
 		label_4 = new Label(grpSurrogatePairToCodepoint, SWT.NONE);
-		fd_label_3.top = new FormAttachment(label_4, 0, SWT.TOP);
-		FormData fd_label_4 = new FormData();
-		fd_label_4.top = new FormAttachment(0, 15);
-		fd_label_4.left = new FormAttachment(0, 202);
-		label_4.setLayoutData(fd_label_4);
+		label_4.setBounds(210, 28, 84, 18);
 		label_4.setText("下位サロゲート");
 
 		textInLowSurrogate = new Text(grpSurrogatePairToCodepoint, SWT.BORDER);
+		textInLowSurrogate.setBounds(320, 25, 72, 24);
 		textInLowSurrogate.addModifyListener(new ModifyListener() {
 			public void modifyText(ModifyEvent e) {
 				textOutCodepoint.setText(UnicodeUtil.convSurrogatePair2Codepoint(
 						textInHighSurrogate.getText(), textInLowSurrogate.getText()));
 			}
 		});
-		FormData fd_textInLowSurrogate = new FormData();
-		fd_textInLowSurrogate.top = new FormAttachment(0, 12);
-		fd_textInLowSurrogate.left = new FormAttachment(0, 292);
-		textInLowSurrogate.setLayoutData(fd_textInLowSurrogate);
 		textInLowSurrogate.setForeground(SWTResourceManager.getColor(0, 0, 0));
 		textInLowSurrogate.setBackground(SWTResourceManager.getColor(255, 255, 255));
 
 		textOutCodepoint = new Text(grpSurrogatePairToCodepoint, SWT.BORDER);
+		textOutCodepoint.setBounds(528, 25, 72, 24);
 		textOutCodepoint.setEditable(false);
 		textOutCodepoint.setBackground(SWTResourceManager.getColor(SWT.COLOR_WIDGET_BACKGROUND));
-		FormData fd_textOutCodepoint = new FormData();
-		fd_textOutCodepoint.top = new FormAttachment(label_3, -3, SWT.TOP);
-		textOutCodepoint.setLayoutData(fd_textOutCodepoint);
 
 		label_5 = new Label(grpSurrogatePairToCodepoint, SWT.NONE);
-		fd_textOutCodepoint.left = new FormAttachment(label_5, 12);
+		label_5.setBounds(420, 28, 84, 18);
 		label_5.setText("コードポイント");
-		FormData fd_label_5 = new FormData();
-		fd_label_5.top = new FormAttachment(label_3, 0, SWT.TOP);
-		fd_label_5.left = new FormAttachment(textInLowSurrogate, 26);
-		label_5.setLayoutData(fd_label_5);
 		m_bindingContext = initDataBindings();
 
 	}
@@ -382,5 +509,14 @@ public class UnicodeForm {
 	}
 	protected Text getTextOutStr() {
 		return textOutStr;
+	}
+	protected Text getTextOutStrLength() {
+		return textOutStrLength;
+	}
+	protected Text getTextOutCodepointCount() {
+		return textOutCodepointCount;
+	}
+	protected Text getTextOutIVSCount() {
+		return textOutIVSCount;
 	}
 }
