@@ -1,10 +1,5 @@
 package form;
 
-import java.io.UnsupportedEncodingException;
-import java.util.List;
-
-import logic.UnicodeUtil;
-
 import org.eclipse.core.databinding.DataBindingContext;
 import org.eclipse.core.databinding.beans.PojoProperties;
 import org.eclipse.core.databinding.observable.Realm;
@@ -14,8 +9,6 @@ import org.eclipse.jface.databinding.swt.WidgetProperties;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.DisposeEvent;
 import org.eclipse.swt.events.DisposeListener;
-import org.eclipse.swt.events.ModifyEvent;
-import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.layout.FormAttachment;
 import org.eclipse.swt.layout.FormData;
 import org.eclipse.swt.layout.FormLayout;
@@ -27,9 +20,6 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.wb.swt.SWTResourceManager;
-
-import form.UnicodeFormHandler.ModifyText_textInUnicode;
-import form.UnicodeFormHandler.Selected_rdUTFEncode;
 
 public class UnicodeForm {
 	private DataBindingContext m_bindingContext;
@@ -134,27 +124,7 @@ public class UnicodeForm {
 
 		textInStr = new Text(grpStrToUnicode, SWT.BORDER);
 		textInStr.setData(textInStr);
-		textInStr.addModifyListener(new ModifyListener() {
-			public void modifyText(ModifyEvent e) {
-				try {
-					String inStr = textInStr.getText();
-					textOutUTF8.setText(UnicodeUtil.decodeUTF8(inStr));
-					textOutUTF16.setText(UnicodeUtil.decodeUTF16(inStr));
-					textOutUTF32.setText(UnicodeUtil.decodeUTF32(inStr));
-					textOutStrLength.setText(String.valueOf(inStr.length()));
-					textOutCodepointCount.setText(String.valueOf(inStr.codePointCount(0, inStr.length())));
-					List<UnicodeUtil.UnicodeInfo> infos = UnicodeUtil.createUnicodeList(inStr);
-					textOutIVSCount.setText(String.valueOf(infos.size()));
-					textOutSurrogatePairStrings.setText(UnicodeUtil.getSurrogatePairString(infos));
-					textOutIVSStrings.setText(UnicodeUtil.getIVString(infos));
-					textOutMongolianIVSCount.setText(String.valueOf(UnicodeUtil.countMongolianIVS(infos)));
-					textOutJapaneseIVSCount.setText(String.valueOf(UnicodeUtil.countJapaneseIVS(infos)));
-					textOutOtherIVSCount.setText(String.valueOf(UnicodeUtil.countOtherIVS(infos)));
-				} catch (UnsupportedEncodingException ex) {
-					ex.printStackTrace();
-				}
-			}
-		});
+		textInStr.addModifyListener(handler.new ModifyText_textInStr());
 		FormData fd_textInStr = new FormData();
 		fd_textInStr.right = new FormAttachment(100, -10);
 		fd_textInStr.top = new FormAttachment(0, 7);
@@ -407,14 +377,7 @@ public class UnicodeForm {
 		fd_grpSurrogatePairToCodepoint.right = new FormAttachment(100, -10);
 
 		textInCodepoint = new Text(grpCodepointToSurrrogatePair, SWT.BORDER);
-		textInCodepoint.addModifyListener(new ModifyListener() {
-			public void modifyText(ModifyEvent e) {
-				String[] surrogatePair =
-						UnicodeUtil.convCodepoint2SurrogateParir(textInCodepoint.getText());
-				textOutHighSurrogate.setText(surrogatePair[0]);
-				textOutLowSurrogate.setText(surrogatePair[1]);
-			}
-		});
+		textInCodepoint.addModifyListener(handler. new ModifyText_textInCodepoint());
 		textInCodepoint.setBounds(110, 25, 72, 24);
 
 		Label label = new Label(grpCodepointToSurrrogatePair, SWT.NONE);
@@ -450,12 +413,7 @@ public class UnicodeForm {
 
 		textInHighSurrogate = new Text(grpSurrogatePairToCodepoint, SWT.BORDER);
 		textInHighSurrogate.setBounds(120, 25, 60, 24);
-		textInHighSurrogate.addModifyListener(new ModifyListener() {
-			public void modifyText(ModifyEvent e) {
-				textOutCodepoint.setText(UnicodeUtil.convSurrogatePair2Codepoint(
-						textInHighSurrogate.getText(), textInLowSurrogate.getText()));
-			}
-		});
+		textInHighSurrogate.addModifyListener(handler. new ModifyText_TextInSurrogatePair());
 		textInHighSurrogate.setForeground(SWTResourceManager.getColor(0, 0, 0));
 		textInHighSurrogate.setBackground(SWTResourceManager.getColor(255, 255, 255));
 
@@ -465,12 +423,7 @@ public class UnicodeForm {
 
 		textInLowSurrogate = new Text(grpSurrogatePairToCodepoint, SWT.BORDER);
 		textInLowSurrogate.setBounds(320, 25, 72, 24);
-		textInLowSurrogate.addModifyListener(new ModifyListener() {
-			public void modifyText(ModifyEvent e) {
-				textOutCodepoint.setText(UnicodeUtil.convSurrogatePair2Codepoint(
-						textInHighSurrogate.getText(), textInLowSurrogate.getText()));
-			}
-		});
+		textInLowSurrogate.addModifyListener(handler. new ModifyText_TextInSurrogatePair());
 		textInLowSurrogate.setForeground(SWTResourceManager.getColor(0, 0, 0));
 		textInLowSurrogate.setBackground(SWTResourceManager.getColor(255, 255, 255));
 
@@ -518,5 +471,50 @@ public class UnicodeForm {
 	}
 	protected Text getTextOutIVSCount() {
 		return textOutIVSCount;
+	}
+	protected Text getTextInStr() {
+		return textInStr;
+	}
+	protected Text getTextOutUTF8() {
+		return textOutUTF8;
+	}
+	protected Text getTextOutUTF16() {
+		return textOutUTF16;
+	}
+	protected Text getTextOutUTF32() {
+		return textOutUTF32;
+	}
+	public Text getTextOutIVSStrings() {
+		return textOutIVSStrings;
+	}
+	public Text getTextOutSurrogatePairStrings() {
+		return textOutSurrogatePairStrings;
+	}
+	protected Text getTextOutMongolianIVSCount() {
+		return textOutMongolianIVSCount;
+	}
+	protected Text getTextOutJapaneseIVSCount() {
+		return textOutJapaneseIVSCount;
+	}
+	protected Text getTextOutOtherIVSCount() {
+		return textOutOtherIVSCount;
+	}
+	protected Text getTextInCodepoint() {
+		return textInCodepoint;
+	}
+	protected Text getTextOutHighSurrogate() {
+		return textOutHighSurrogate;
+	}
+	protected Text getTextOutLowSurrogate() {
+		return textOutLowSurrogate;
+	}
+	protected Text getTextInHighSurrogate() {
+		return textInHighSurrogate;
+	}
+	protected Text getTextInLowSurrogate() {
+		return textInLowSurrogate;
+	}
+	protected Text getTextOutCodepoint() {
+		return textOutCodepoint;
 	}
 }
