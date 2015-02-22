@@ -377,6 +377,7 @@ public class UnicodeForm {
 		fd_grpSurrogatePairToCodepoint.right = new FormAttachment(100, -10);
 
 		textInCodepoint = new Text(grpCodepointToSurrrogatePair, SWT.BORDER);
+		textInCodepoint.setTextLimit(6);
 		textInCodepoint.addModifyListener(handler. new ModifyText_textInCodepoint());
 		textInCodepoint.setBounds(110, 25, 72, 24);
 
@@ -412,6 +413,7 @@ public class UnicodeForm {
 		label_3.setText("上位サロゲート");
 
 		textInHighSurrogate = new Text(grpSurrogatePairToCodepoint, SWT.BORDER);
+		textInHighSurrogate.setTextLimit(4);
 		textInHighSurrogate.setBounds(120, 25, 60, 24);
 		textInHighSurrogate.addModifyListener(handler. new ModifyText_TextInSurrogatePair());
 		textInHighSurrogate.setForeground(SWTResourceManager.getColor(0, 0, 0));
@@ -422,6 +424,7 @@ public class UnicodeForm {
 		label_4.setText("下位サロゲート");
 
 		textInLowSurrogate = new Text(grpSurrogatePairToCodepoint, SWT.BORDER);
+		textInLowSurrogate.setTextLimit(4);
 		textInLowSurrogate.setBounds(320, 25, 72, 24);
 		textInLowSurrogate.addModifyListener(handler. new ModifyText_TextInSurrogatePair());
 		textInLowSurrogate.setForeground(SWTResourceManager.getColor(0, 0, 0));

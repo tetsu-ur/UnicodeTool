@@ -6,11 +6,14 @@ import java.util.List;
 
 import logic.UnicodeUtil;
 
+import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
+import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Text;
+import org.eclipse.wb.swt.SWTResourceManager;
 
 class UnicodeFormHandler {
 
@@ -108,10 +111,33 @@ class UnicodeFormHandler {
 
 		@Override
 		public void modifyText(ModifyEvent e) {
-            String[] surrogatePair =
-                    UnicodeUtil.convCodepoint2SurrogateParir(_form.getTextInCodepoint().getText());
-            _form.getTextOutHighSurrogate().setText(surrogatePair[0]);
-            _form.getTextOutLowSurrogate().setText(surrogatePair[1]);
+
+			String codepointText = _form.getTextInCodepoint().getText();
+			if (codepointText.length() < 5) {
+				_form.getTextOutHighSurrogate().setText("");
+				_form.getTextOutLowSurrogate().setText("");
+				setError(_form.getTextInCodepoint(), false);
+				return;
+			}
+
+			String highSurrogate = "";
+			String lowSurrogate = "";
+
+            try {
+
+				String[] surrogatePair = UnicodeUtil.convCodepoint2SurrogatePair(codepointText);
+				highSurrogate = surrogatePair[0];
+				lowSurrogate = surrogatePair[1];
+				setError(_form.getTextInCodepoint(), false);
+
+			} catch (Exception e1) {
+
+				e1.printStackTrace();
+				setError(_form.getTextInCodepoint(), true);
+			}
+
+            _form.getTextOutHighSurrogate().setText(highSurrogate);
+            _form.getTextOutLowSurrogate().setText(lowSurrogate);
 		}
 	}
 
@@ -127,5 +153,13 @@ class UnicodeFormHandler {
             _form.getTextOutCodepoint().setText(UnicodeUtil.convSurrogatePair2Codepoint(
                     _form.getTextInHighSurrogate().getText(), _form.getTextInLowSurrogate().getText()));
 		}
+	}
+
+	private void setError(Control control, boolean isError) {
+		int foreColorVal = isError ? SWT.COLOR_WHITE : SWT.COLOR_BLACK;
+		int backColorVal = isError ? SWT.COLOR_RED : SWT.COLOR_WHITE;
+
+		control.setForeground(SWTResourceManager.getColor(foreColorVal));
+		control.setBackground(SWTResourceManager.getColor(backColorVal));
 	}
 }

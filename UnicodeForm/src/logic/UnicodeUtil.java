@@ -104,8 +104,18 @@ public class UnicodeUtil {
 		return byteArray;
 	}
 
-	public static String[] convCodepoint2SurrogateParir(String strCodePoint) {
-		byte[] surrogatePairBytes = surrogate(Integer.parseInt(strCodePoint,16));
+	public static String[] convCodepoint2SurrogatePair(String strCodePoint) {
+
+		if (!strCodePoint.matches("^[a-fA-F0-9]{5,6}$")) {
+			throw new NumberFormatException("コードポイントの値に16真数でない文字が含まれます。");
+		}
+
+		int codepoint = Integer.parseInt(strCodePoint,16);
+		if (!isCodepoint(codepoint)) {
+			throw new IllegalArgumentException("コードポイントの範囲ではありません。");
+		}
+
+		byte[] surrogatePairBytes = surrogate(codepoint);
 		String[] surrogatePairStrs = {
 				cnvByte2Hex(Arrays.copyOfRange(surrogatePairBytes, 0,2), 4),
 				cnvByte2Hex(Arrays.copyOfRange(surrogatePairBytes, 2,4), 4)};
@@ -526,4 +536,12 @@ public class UnicodeUtil {
 
 	}
 
+	/**
+	 * コードポイントの範囲かを判定
+	 * @param codepoint
+	 * @return
+	 */
+	public static boolean isCodepoint(int codepoint) {
+		return 0x0020 <= codepoint && codepoint <= 0x10FFFF;
+	}
 }
