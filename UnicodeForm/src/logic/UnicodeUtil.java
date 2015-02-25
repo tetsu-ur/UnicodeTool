@@ -8,6 +8,13 @@ import java.util.List;
 
 public class UnicodeUtil {
 
+	public static String UTF16_BOM_HEX = "FEFF";
+
+	public static String UTF8_BOM_HEX = "EF BB BF";
+
+	public static String UTF32_BOM_HEX = "0000FEFF";
+
+
 	public static String decodeUTF8(String str) throws UnsupportedEncodingException {
 		byte[] utf8 = str.getBytes("UTF-8");
 		return cnvByte2Hex(utf8, 1);

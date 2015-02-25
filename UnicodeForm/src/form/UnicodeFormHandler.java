@@ -89,17 +89,31 @@ class UnicodeFormHandler {
 	 * 「Unicode → 文字」のテキストボックスの Unicode をエンコードしてテキストボックスに設定
 	 */
 	private void setStringTextFromUnicode() {
-
-        Text textInUnicode = _form.getTextInUnicode();
+        String inUnicode = _form.getTextInUnicode().getText().toUpperCase().replaceAll(" ", "");
+        String encodeStr = "";
+        String bomStr = "";
         Text textOutStr = _form.getTextOutStr();
+        Text textOutBom = _form.getTextOutBom();
+//        _form.getTextOutBom().setText("");
 
         if (_form.getRdUTF16().getSelection()) {
-            textOutStr.setText(UnicodeUtil.encodeUTF16(textInUnicode.getText()));
+        	encodeStr = UnicodeUtil.encodeUTF16(inUnicode);
+            if (inUnicode.startsWith(UnicodeUtil.UTF16_BOM_HEX.replaceAll(" ", ""))) {
+                bomStr = UnicodeUtil.UTF16_BOM_HEX;
+            }
         } else if (_form.getRdUTF8().getSelection()) {
-            textOutStr.setText(UnicodeUtil.encodeUTF8(textInUnicode.getText()));
+        	encodeStr = UnicodeUtil.encodeUTF8(inUnicode);
+            if (inUnicode.startsWith(UnicodeUtil.UTF8_BOM_HEX.replaceAll(" ", ""))) {
+                bomStr = UnicodeUtil.UTF8_BOM_HEX;
+            }
         } else if (_form.getRdUTF32().getSelection()) {
-            textOutStr.setText(UnicodeUtil.encodeUTF32(textInUnicode.getText()));
+        	encodeStr = UnicodeUtil.encodeUTF32(inUnicode);
+            if (inUnicode.startsWith(UnicodeUtil.UTF32_BOM_HEX.replaceAll(" ", ""))) {
+                bomStr = UnicodeUtil.UTF32_BOM_HEX;
+            }
         }
+        textOutStr.setText(encodeStr);
+        textOutBom.setText(bomStr);
 	}
 
 	/**
