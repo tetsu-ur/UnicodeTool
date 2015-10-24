@@ -14,6 +14,7 @@ public class UnicodeUtil {
 
 	public static String UTF32_BOM_HEX = "0000FEFF";
 
+	public static String REG_HEX = "^[0-9A-Fa-f]*$";
 
 	public static String decodeUTF8(String str) throws UnsupportedEncodingException {
 		byte[] utf8 = str.getBytes("UTF-8");
@@ -31,7 +32,7 @@ public class UnicodeUtil {
 	}
 
 	/**
-	 *
+	 * 16進数の文字列をバイト配列に変換
 	 * @param hex
 	 * @return
 	 * @see http://techracho.bpsinc.jp/baba/2011_09_03/4414
@@ -44,77 +45,28 @@ public class UnicodeUtil {
 		return bytes;
 	}
 
-	public static String encodeUTF32(String strUtf32) {
+	/**
+	 * 文字列を16進数表現にエンコード
+	 * @param strUtf
+	 * @param encodingName
+	 * @return
+	 */
+	public static String encodeUTF(String strUtf, String encodingName) {
 		String encodeString = "";
 
 		try {
-			encodeString = new String(hex2bin(strUtf32.replaceAll(" ", "")), "UTF-32");
+			encodeString = new String(hex2bin(strUtf.replaceAll(" ", "")), encodingName);
 		} catch (UnsupportedEncodingException e) {
 			e.printStackTrace();
 		}
 
 		return encodeString;
-	}
-
-	public static String encodeUTF16(String strUtf16) {
-		char[] chars = strUtf16.replaceAll(" ", "").toCharArray();
-		StringBuilder sb = new StringBuilder();
-
-		for (int i=0; i <= chars.length - 1; i = i+4) {
-
-			if (i+4 > chars.length) {
-				break;
-			}
-
-            String codeunit = new String(Arrays.copyOfRange(chars, i, i+4));
-            sb.append((char)Integer.parseInt(codeunit,16));
-		}
-
-		return sb.toString();
-	}
-
-	public static String encodeUTF8(String strUtf8) {
-		char[] chars = strUtf8.replaceAll(" ", "").toCharArray();
-		List<Byte> byteList = new ArrayList<Byte>();
-
-		for (int i=0; i <= chars.length - 1; i = i+2) {
-
-			if (i+2 > chars.length) {
-				break;
-			}
-
-            String codeunit = new String(Arrays.copyOfRange(chars, i, i+2));
-        	byte hexByte = (byte)Integer.parseInt(codeunit,16);
-       		byteList.add(new Byte(hexByte));
-		}
-
-		String encodeString = "";
-        try {
-        	byte[] utf8bytes = cnvByteListToByteArray(byteList);
-        	encodeString = new String(utf8bytes, "UTF-8");
-		} catch (NumberFormatException e) {
-			e.printStackTrace();
-		} catch (UnsupportedEncodingException e) {
-			e.printStackTrace();
-		}
-
-		return encodeString;
-	}
-
-	private static byte[] cnvByteListToByteArray(List<Byte> byteList) {
-		Byte[] byteObjArray = byteList.toArray(new Byte[0]);
-		byte[] byteArray = new byte[byteList.size()];
-		for (int i=0; i <= byteObjArray.length - 1; i++) {
-			byteArray[i] = byteObjArray[i].byteValue();
-		}
-
-		return byteArray;
 	}
 
 	public static String[] convCodepoint2SurrogatePair(String strCodePoint) {
 
 		if (!strCodePoint.matches("^[a-fA-F0-9]{5,6}$")) {
-			throw new NumberFormatException("コードポイントの値に16真数でない文字が含まれます。");
+			throw new NumberFormatException("コードポイントの値に16進数でない文字が含まれます。");
 		}
 
 		int codepoint = Integer.parseInt(strCodePoint,16);
@@ -131,12 +83,18 @@ public class UnicodeUtil {
 
 	public static String convSurrogatePair2Codepoint(String high, String low) {
 
-		if (high == null || low == null || high.isEmpty() || low.isEmpty()) {
+		if (high == null || low == null || high.length() != 4 || low.length() !=4) {
 			return "";
 		}
 
-		int codepoint = Character.toCodePoint(
-				(char)Integer.parseInt(high, 16), (char)Integer.parseInt(low, 16));
+		char highSurrogateChar = (char)Integer.parseInt(high, 16);
+		char lowSurrogateChar = (char)Integer.parseInt(low, 16);
+
+		if (!Character.isHighSurrogate(highSurrogateChar) || !Character.isLowSurrogate(lowSurrogateChar)) {
+			throw new IllegalArgumentException("サロゲートのコード範囲ではありません。");
+		}
+
+		int codepoint = Character.toCodePoint(highSurrogateChar , lowSurrogateChar);
 
 		return formatCodepoint(codepoint);
 	}
@@ -236,37 +194,6 @@ public class UnicodeUtil {
 		}
 
 		return sb.toString().toUpperCase().trim();
-	}
-
-	/**
-	 * バイト配列の先頭から prefix の要素を除去.
-	 * Example.
-	 *     prefix : 0
-	 *     bytes : [0, -29, -127, -126]
-	 *     result : [-29, -127, -126]
-	 * @param bytes
-	 * @param prefix
-	 * @return
-	 */
-	@Deprecated
-	public static byte[] removePrefixBytes(byte[] bytes, byte prefix) {
-
-		int extractIdx = -1;
-
-		for (int i=0; i <= bytes.length - 1; i++) {
-			if (bytes[i] == prefix) {
-				continue;
-			} else {
-				extractIdx = i;
-				break;
-			}
-		}
-
-		if (extractIdx > -1) {
-			return Arrays.copyOfRange(bytes, extractIdx, bytes.length);
-		}
-
-		return bytes;
 	}
 
 	public static String formatCodepoint(int codepoint) {

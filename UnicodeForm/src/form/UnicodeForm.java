@@ -7,10 +7,6 @@ import org.eclipse.core.databinding.observable.value.IObservableValue;
 import org.eclipse.jface.databinding.swt.SWTObservables;
 import org.eclipse.jface.databinding.swt.WidgetProperties;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.ControlAdapter;
-import org.eclipse.swt.events.ControlEvent;
-import org.eclipse.swt.events.DisposeEvent;
-import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.FormAttachment;
 import org.eclipse.swt.layout.FormData;
@@ -27,7 +23,6 @@ import org.eclipse.wb.swt.SWTResourceManager;
 
 public class UnicodeForm {
 
-	private static int MAX_HIGHT = 620;
 
 	private DataBindingContext m_bindingContext;
 
@@ -114,24 +109,9 @@ public class UnicodeForm {
 	protected void createContents() {
 		shlUnicode = new Shell(Display.getDefault(), SWT.CLOSE | SWT.RESIZE | SWT.MIN | SWT.TITLE | SWT.SYSTEM_MODAL);
 		shlUnicode.setMinimumSize(new Point(730, 620));
-		shlUnicode.addControlListener(new ControlAdapter() {
-			@Override
-			public void controlResized(ControlEvent e) {
-				if (e.getSource() instanceof Shell) {
-					Shell shell = (Shell) e.getSource();
-					if (shell.getSize().y >= MAX_HIGHT) {
-						shell.setSize(new Point(shell.getSize().x, MAX_HIGHT));
-						return;
-					}
-				}
-			}
-		});
-		shlUnicode.addDisposeListener(new DisposeListener() {
-	 		public void widgetDisposed(DisposeEvent e) {
-				settings.save();
-			}
-		});
-		shlUnicode.setSize(730, 654);
+		shlUnicode.addControlListener(handler.new ControlAdapter_settings());
+		shlUnicode.addDisposeListener(handler.new DisposedListener_widgetDisposed());
+		shlUnicode.setSize(730, 630);
 		shlUnicode.setText("Unicodeツール");
 		shlUnicode.setLayout(new FormLayout());
 
@@ -459,7 +439,6 @@ public class UnicodeForm {
 		label_5.setBounds(420, 28, 84, 18);
 		label_5.setText("コードポイント");
 		m_bindingContext = initDataBindings();
-
 	}
 	protected DataBindingContext initDataBindings() {
 		DataBindingContext bindingContext = new DataBindingContext();
@@ -542,5 +521,13 @@ public class UnicodeForm {
 	}
 	protected Text getTextOutBom() {
 		return textOutBom;
+	}
+
+	public UnicodeFormSettings getSettings() {
+		return settings;
+	}
+
+	public void setSettings(UnicodeFormSettings settings) {
+		this.settings = settings;
 	}
 }
