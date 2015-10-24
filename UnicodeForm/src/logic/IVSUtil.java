@@ -61,7 +61,6 @@ public class IVSUtil {
      * @param c 評価するUNICODE文字
      * @return 文字がセレクタ文字列の場合は true。それ以外の場合は false。
      */
-    @SuppressWarnings("unused")
 	public static boolean checkVariationSelectorSupplement(char c)
     {
         if (c == VariationSelectorSupplementHi
@@ -77,7 +76,6 @@ public class IVSUtil {
      * @param c 評価するUNICODE文字
      * @return 文字がセレクタ文字列の場合は true。それ以外の場合は false。
      */
-    @SuppressWarnings("unused")
 	public static boolean checkVariationSelector(char c)
     {
         if (VariationSelectorStart <= c && c <= VariationSelectorEnd)
@@ -92,7 +90,6 @@ public class IVSUtil {
      * @param c 評価するUNICODE文字
      * @return 文字がセレクタ文字列の場合は true。それ以外の場合は false。
      */
-    @SuppressWarnings("unused")
 	public static boolean checkMongolianFreeVariationSelector(char c)
     {
         if (MongolianFreeVariationSelectorStart <= c && c <= MongolianFreeVariationSelectorEnd)

@@ -24,6 +24,7 @@ import org.eclipse.wb.swt.SWTResourceManager;
 public class UnicodeForm {
 
 
+	@SuppressWarnings("unused")
 	private DataBindingContext m_bindingContext;
 
 	protected Shell shlUnicode;
